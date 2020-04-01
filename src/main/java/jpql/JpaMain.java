@@ -1,6 +1,7 @@
 package jpql;
 
 import javax.persistence.*;
+import java.util.List;
 
 public class JpaMain {
 
@@ -24,6 +25,21 @@ public class JpaMain {
                     .setParameter("username", "member1")
                     .getSingleResult();
             System.out.println("query3 = " + query3.getUsername());
+
+            em.flush();
+            em.clear();
+
+            List<Member> result = em.createQuery("select m from Member m", Member.class)
+                    .getResultList();
+            Member findMember = result.get(0);
+            findMember.setAge(20);  // update query 나감
+
+
+            List<MemberDTO> result2 = em.createQuery("select new jpql.MemberDTO(m.username, m.age) from Member m", MemberDTO.class)
+                    .getResultList();
+            MemberDTO memberDTO = result2.get(0);
+            System.out.println("memberDTO = " + memberDTO.getUsername());
+            System.out.println("memberDTO = " + memberDTO.getAge());
 
             tx.commit();
         } catch (Exception e) {
