@@ -21,6 +21,7 @@ public class JpaMain {
             member.setUsername("member1");
             member.setAge(10);
             member.changeTeam(team);
+            member.setType(MemberType.ADMIN);
             em.persist(member);
 
             em.flush();
@@ -39,6 +40,9 @@ public class JpaMain {
             // 조인
             join(em);
 
+            // 타입
+            type(em);
+
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
@@ -48,6 +52,19 @@ public class JpaMain {
         }
         emf.close();
 
+    }
+
+    private static void type(EntityManager em) {
+        String query = "select m.username, 'Hello', TRUE from Member m " +
+                "where m.type = jpql.MemberType.ADMIN";
+        List<Object[]> result = em.createQuery(query)
+                .getResultList();
+
+        for (Object[] objects : result) {
+            System.out.println("objects = " + objects[0]);
+            System.out.println("objects = " + objects[1]);
+            System.out.println("objects = " + objects[2]);
+        }
     }
 
     private static void join(EntityManager em) {
