@@ -38,10 +38,13 @@ public class JpaMain {
 //            paging(em);
 
             // 조인
-            join(em);
+//            join(em);
 
             // 타입
-            type(em);
+//            type(em);
+
+            // case
+            caseBasic(em);
 
             tx.commit();
         } catch (Exception e) {
@@ -52,6 +55,22 @@ public class JpaMain {
         }
         emf.close();
 
+    }
+
+    private static void caseBasic(EntityManager em) {
+        String query = "select " +
+                " case when m.age <= 10 then '학생요금'" +
+                "      when m.age >= 10 then '경로요금'" +
+                "      else '일반요금'" +
+                " end" +
+                " from Member m";
+        String query2 = "select coalesce(m.username, '이름 없는 회원') from Member m";
+        String query3 = "select nullif(m.username, 'member1') from Member m";   // null
+        List<String> result = em.createQuery(query3, String.class)
+                .getResultList();
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
     }
 
     private static void type(EntityManager em) {
