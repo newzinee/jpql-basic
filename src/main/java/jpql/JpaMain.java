@@ -44,7 +44,18 @@ public class JpaMain {
 //            type(em);
 
             // case
-            caseBasic(em);
+//            caseBasic(em);
+
+            // basic function
+            String query0 = "select 'a' || 'b' from Member m";
+            String query1 = "select concat('a','b') from Member m";
+            String query2 = "select substring(m.username, 2, 3) from Member m";
+            String query = "select locate('de','abcdefg') from Member m";   // type Integer, 결과4
+            List<String> result = em.createQuery(query, String.class)
+                    .getResultList();
+            for (String s : result) {
+                System.out.println("s = " + s);
+            }
 
             tx.commit();
         } catch (Exception e) {
