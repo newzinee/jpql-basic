@@ -24,6 +24,10 @@ public class JpaMain {
             member.setType(MemberType.ADMIN);
             em.persist(member);
 
+            Member member2 = new Member();
+            member2.setUsername("member2");
+            em.persist(member2);
+
             em.flush();
             em.clear();
 
@@ -50,7 +54,12 @@ public class JpaMain {
             String query0 = "select 'a' || 'b' from Member m";
             String query1 = "select concat('a','b') from Member m";
             String query2 = "select substring(m.username, 2, 3) from Member m";
-            String query = "select locate('de','abcdefg') from Member m";   // type Integer, 결과4
+            String query3 = "select locate('de','abcdefg') from Member m";   // type Integer, 결과4
+            String query4 = "select size(t.members) from Team t";    // type Integer
+            String query5 = "select index(t.members) from Team t";    // type Integer, 안쓰는게 좋아
+            String query6 = "select function('group_concat', m.username) from Member m";    // 사용자정의 함수
+            String query = "select group_concat(m.username) from Member m";    // 사용자정의 함수 - hibernate
+
             List<String> result = em.createQuery(query, String.class)
                     .getResultList();
             for (String s : result) {
