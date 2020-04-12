@@ -1,6 +1,7 @@
 package jpql;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.List;
 
 public class JpaMain {
@@ -26,6 +27,7 @@ public class JpaMain {
 
             Member member2 = new Member();
             member2.setUsername("member2");
+            member2.changeTeam(team);
             em.persist(member2);
 
             em.flush();
@@ -51,20 +53,17 @@ public class JpaMain {
 //            caseBasic(em);
 
             // basic function
-            String query0 = "select 'a' || 'b' from Member m";
-            String query1 = "select concat('a','b') from Member m";
-            String query2 = "select substring(m.username, 2, 3) from Member m";
-            String query3 = "select locate('de','abcdefg') from Member m";   // type Integer, 결과4
-            String query4 = "select size(t.members) from Team t";    // type Integer
-            String query5 = "select index(t.members) from Team t";    // type Integer, 안쓰는게 좋아
-            String query6 = "select function('group_concat', m.username) from Member m";    // 사용자정의 함수
-            String query = "select group_concat(m.username) from Member m";    // 사용자정의 함수 - hibernate
+//            basicFunction(em);
+
+            // 경로 표현식
+            String query0 = "select m.team From Member m";    // 단일값 연관 경로 - 묵시적 내부 조인 발생
+            String query1 = "select t.members From Team t";    // 컬렉션 값 연관 경로 - 묵시적 내부 조인 발생
+            String query = "select m.username from Team t join t.members m";   // 명시적 조인
 
             List<String> result = em.createQuery(query, String.class)
                     .getResultList();
-            for (String s : result) {
-                System.out.println("s = " + s);
-            }
+
+            System.out.println("result = " + result);
 
             tx.commit();
         } catch (Exception e) {
@@ -75,6 +74,23 @@ public class JpaMain {
         }
         emf.close();
 
+    }
+
+    private static void basicFunction(EntityManager em) {
+        String query0 = "select 'a' || 'b' from Member m";
+        String query1 = "select concat('a','b') from Member m";
+        String query2 = "select substring(m.username, 2, 3) from Member m";
+        String query3 = "select locate('de','abcdefg') from Member m";   // type Integer, 결과4
+        String query4 = "select size(t.members) from Team t";    // type Integer
+        String query5 = "select index(t.members) from Team t";    // type Integer, 안쓰는게 좋아
+        String query6 = "select function('group_concat', m.username) from Member m";    // 사용자정의 함수
+        String query = "select group_concat(m.username) from Member m";    // 사용자정의 함수 - hibernate
+
+        List<String> result = em.createQuery(query, String.class)
+                .getResultList();
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
     }
 
     private static void caseBasic(EntityManager em) {
