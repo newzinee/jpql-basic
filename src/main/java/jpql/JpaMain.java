@@ -85,11 +85,20 @@ public class JpaMain {
 //            String query = "select t from Team t join fetch t.members";
             // teamA는 하난데 member가 2명이라, teamA row가 2줄 나와.
 
-            String query = "select distinct t from Team t join fetch t.members";
+//            String query = "select distinct t from Team t join fetch t.members";
             // sql의 distinct + entity 중복 제거
 
+            String query = "select t from Team t";
+            // team SQL 1번 + team에 Member 조회(team 갯수) 2번: N+1 문제
+            // 해결 1-> class Team의 members에 @BatchSize(size=100) 추가 (in 쿼리)
+            // 해결 2-> hibernate.default_batch_fetch_size 설정 (in 쿼리)
+
             List<Team> result = em.createQuery(query, Team.class)
+                    .setFirstResult(0)
+                    .setMaxResults(2)
                     .getResultList();
+
+            System.out.println("result = " + result.size());
 
             for (Team t : result) {
                 System.out.println("team = " + t.getName() + " | members = " + t.getMembers().size());
