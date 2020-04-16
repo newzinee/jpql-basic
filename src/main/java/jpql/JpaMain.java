@@ -18,17 +18,28 @@ public class JpaMain {
             team.setName("teamA");
             em.persist(team);
 
-            Member member = new Member();
-            member.setUsername("member1");
-            member.setAge(10);
-            member.changeTeam(team);
-            member.setType(MemberType.ADMIN);
-            em.persist(member);
+             Team teamB = new Team();
+            teamB.setName("teamB");
+            em.persist(teamB);
+
+
+
+            Member member1 = new Member();
+            member1.setUsername("member1");
+            member1.setAge(10);
+            member1.changeTeam(team);
+            member1.setType(MemberType.ADMIN);
+            em.persist(member1);
 
             Member member2 = new Member();
             member2.setUsername("member2");
             member2.changeTeam(team);
             em.persist(member2);
+
+            Member member3 = new Member();
+            member3.setUsername("member3");
+            member3.changeTeam(teamB);
+            em.persist(member3);
 
             em.flush();
             em.clear();
@@ -56,14 +67,33 @@ public class JpaMain {
 //            basicFunction(em);
 
             // 경로 표현식
-            String query0 = "select m.team From Member m";    // 단일값 연관 경로 - 묵시적 내부 조인 발생
-            String query1 = "select t.members From Team t";    // 컬렉션 값 연관 경로 - 묵시적 내부 조인 발생
-            String query = "select m.username from Team t join t.members m";   // 명시적 조인
+//            경로표현식(em);
 
-            List<String> result = em.createQuery(query, String.class)
+            // fetch join
+//            String query = "select m from Member m";    // LAZY - sout 시 team 쿼리 실행
+            // 회원(SQL)
+            // 회원1, 팀A(SQL)
+            // 회원2, 팀A(1차캐시)
+            // 회원3, 팀B(SQL)
+            // SQL 총 3번 나감
+            // 문제: 회원 100명 -> N(100명) + 1(회원)
+
+//            String query = "select m from Member m join fetch m.team";
+            // 회원 + 팀 (SQL)
+            // 여기서 TEAM은 proxy가 아닌 실제 데이터
+
+//            String query = "select t from Team t join fetch t.members";
+            // teamA는 하난데 member가 2명이라, teamA row가 2줄 나와.
+
+            String query = "select distinct t from Team t join fetch t.members";
+            // sql의 distinct + entity 중복 제거
+
+            List<Team> result = em.createQuery(query, Team.class)
                     .getResultList();
 
-            System.out.println("result = " + result);
+            for (Team t : result) {
+                System.out.println("team = " + t.getName() + " | members = " + t.getMembers().size());
+            }
 
             tx.commit();
         } catch (Exception e) {
@@ -74,6 +104,17 @@ public class JpaMain {
         }
         emf.close();
 
+    }
+
+    private static void 경로표현식(EntityManager em) {
+        String query0 = "select m.team From Member m";    // 단일값 연관 경로 - 묵시적 내부 조인 발생
+        String query1 = "select t.members From Team t";    // 컬렉션 값 연관 경로 - 묵시적 내부 조인 발생
+        String query = "select m.username from Team t join t.members m";   // 명시적 조인
+
+        List<String> result = em.createQuery(query, String.class)
+                .getResultList();
+
+        System.out.println("result = " + result);
     }
 
     private static void basicFunction(EntityManager em) {
