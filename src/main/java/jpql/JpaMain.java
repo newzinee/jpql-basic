@@ -70,39 +70,17 @@ public class JpaMain {
 //            경로표현식(em);
 
             // fetch join
-//            String query = "select m from Member m";    // LAZY - sout 시 team 쿼리 실행
-            // 회원(SQL)
-            // 회원1, 팀A(SQL)
-            // 회원2, 팀A(1차캐시)
-            // 회원3, 팀B(SQL)
-            // SQL 총 3번 나감
-            // 문제: 회원 100명 -> N(100명) + 1(회원)
+//            fetchJoin(em);
 
-//            String query = "select m from Member m join fetch m.team";
-            // 회원 + 팀 (SQL)
-            // 여기서 TEAM은 proxy가 아닌 실제 데이터
+            // 엔티티 직접사용
+            String query1 = "select m from Member m where m = :member";
+            String query = "select m from Member m where m.team = :team";
+            Member findMember = em.createQuery(query, Member.class)
+//                    .setParameter("member", member1)
+                    .setParameter("team", teamB)
+                    .getSingleResult();
 
-//            String query = "select t from Team t join fetch t.members";
-            // teamA는 하난데 member가 2명이라, teamA row가 2줄 나와.
-
-//            String query = "select distinct t from Team t join fetch t.members";
-            // sql의 distinct + entity 중복 제거
-
-            String query = "select t from Team t";
-            // team SQL 1번 + team에 Member 조회(team 갯수) 2번: N+1 문제
-            // 해결 1-> class Team의 members에 @BatchSize(size=100) 추가 (in 쿼리)
-            // 해결 2-> hibernate.default_batch_fetch_size 설정 (in 쿼리)
-
-            List<Team> result = em.createQuery(query, Team.class)
-                    .setFirstResult(0)
-                    .setMaxResults(2)
-                    .getResultList();
-
-            System.out.println("result = " + result.size());
-
-            for (Team t : result) {
-                System.out.println("team = " + t.getName() + " | members = " + t.getMembers().size());
-            }
+            System.out.println("findMember = " + findMember);
 
             tx.commit();
         } catch (Exception e) {
@@ -113,6 +91,42 @@ public class JpaMain {
         }
         emf.close();
 
+    }
+
+    private static void fetchJoin(EntityManager em) {
+        //            String query = "select m from Member m";    // LAZY - sout 시 team 쿼리 실행
+        // 회원(SQL)
+        // 회원1, 팀A(SQL)
+        // 회원2, 팀A(1차캐시)
+        // 회원3, 팀B(SQL)
+        // SQL 총 3번 나감
+        // 문제: 회원 100명 -> N(100명) + 1(회원)
+
+//            String query = "select m from Member m join fetch m.team";
+        // 회원 + 팀 (SQL)
+        // 여기서 TEAM은 proxy가 아닌 실제 데이터
+
+//            String query = "select t from Team t join fetch t.members";
+        // teamA는 하난데 member가 2명이라, teamA row가 2줄 나와.
+
+//            String query = "select distinct t from Team t join fetch t.members";
+        // sql의 distinct + entity 중복 제거
+
+        String query = "select t from Team t";
+        // team SQL 1번 + team에 Member 조회(team 갯수) 2번: N+1 문제
+        // 해결 1-> class Team의 members에 @BatchSize(size=100) 추가 (in 쿼리)
+        // 해결 2-> hibernate.default_batch_fetch_size 설정 (in 쿼리)
+
+        List<Team> result = em.createQuery(query, Team.class)
+                .setFirstResult(0)
+                .setMaxResults(2)
+                .getResultList();
+
+        System.out.println("result = " + result.size());
+
+        for (Team t : result) {
+            System.out.println("team = " + t.getName() + " | members = " + t.getMembers().size());
+        }
     }
 
     private static void 경로표현식(EntityManager em) {
