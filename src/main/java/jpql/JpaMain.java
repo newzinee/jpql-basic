@@ -73,14 +73,15 @@ public class JpaMain {
 //            fetchJoin(em);
 
             // 엔티티 직접사용
-            String query1 = "select m from Member m where m = :member";
-            String query = "select m from Member m where m.team = :team";
-            Member findMember = em.createQuery(query, Member.class)
-//                    .setParameter("member", member1)
-                    .setParameter("team", teamB)
-                    .getSingleResult();
+//            엔티티직접사용(em, teamB);
 
-            System.out.println("findMember = " + findMember);
+            // named query
+            List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
+                    .setParameter("username", "member1")
+                    .getResultList();
+            for (Member member : resultList) {
+                System.out.println("member = " + member);
+            }
 
             tx.commit();
         } catch (Exception e) {
@@ -91,6 +92,17 @@ public class JpaMain {
         }
         emf.close();
 
+    }
+
+    private static void 엔티티직접사용(EntityManager em, Team teamB) {
+        String query1 = "select m from Member m where m = :member";
+        String query = "select m from Member m where m.team = :team";
+        Member findMember = em.createQuery(query, Member.class)
+//                    .setParameter("member", member1)
+                .setParameter("team", teamB)
+                .getSingleResult();
+
+        System.out.println("findMember = " + findMember);
     }
 
     private static void fetchJoin(EntityManager em) {
