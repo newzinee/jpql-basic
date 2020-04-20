@@ -76,12 +76,10 @@ public class JpaMain {
 //            엔티티직접사용(em, teamB);
 
             // named query
-            List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
-                    .setParameter("username", "member1")
-                    .getResultList();
-            for (Member member : resultList) {
-                System.out.println("member = " + member);
-            }
+//            namedQuery(em);
+
+            // bulk
+            bulk(em, member1);
 
             tx.commit();
         } catch (Exception e) {
@@ -92,6 +90,24 @@ public class JpaMain {
         }
         emf.close();
 
+    }
+
+    private static void bulk(EntityManager em, Member member1) {
+        int resultCount = em.createQuery("update Member m set m.age = 20")
+                .executeUpdate();
+        System.out.println("resultCount = " + resultCount);
+
+        Member findMember = em.find(Member.class, member1.getId());
+        System.out.println("findMember = " + findMember.getAge());      // em.clear 하기전에는 10, 한 후에 20 적용됨.
+    }
+
+    private static void namedQuery(EntityManager em) {
+        List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
+                .setParameter("username", "member1")
+                .getResultList();
+        for (Member member : resultList) {
+            System.out.println("member = " + member);
+        }
     }
 
     private static void 엔티티직접사용(EntityManager em, Team teamB) {
